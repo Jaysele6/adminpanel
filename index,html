@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="sw">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Smart Woman — Admin Dashboard</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #f3f0f8;
+      color: #222;
+      min-height: 100vh;
+    }
+
+    /* ── Login ── */
+    #login-screen {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      background: linear-gradient(135deg, #8E44AD 0%, #6c3483 100%);
+    }
+
+    .login-card {
+      background: white;
+      border-radius: 20px;
+      padding: 40px 36px;
+      width: 100%;
+      max-width: 380px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+      text-align: center;
+    }
+
+    .login-card .logo {
+      font-size: 42px;
+      margin-bottom: 8px;
+    }
+
+    .login-card h2 {
+      font-size: 22px;
+      font-weight: 800;
+      color: #8E44AD;
+      margin-bottom: 4px;
+    }
+
+    .login-card p {
+      font-size: 13px;
+      color: #888;
+      margin-bottom: 28px;
+    }
+
+    .login-card input {
+      width: 100%;
+      padding: 14px 16px;
+      border: 2px solid #e0d6f0;
+      border-radius: 12px;
+      font-size: 15px;
+      outline: none;
+      margin-bottom: 16px;
+      transition: border-color 0.2s;
+    }
+
+    .login-card input:focus { border-color: #8E44AD; }
+
+    .login-card button {
+      width: 100%;
+      padding: 14px;
+      background: #8E44AD;
+      color: white;
+      border: none;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .login-card button:hover { background: #6c3483; }
+
+    .error-msg {
+      color: #e74c3c;
+      font-size: 13px;
+      margin-top: 10px;
+      display: none;
+    }
+
+    /* ── Dashboard ── */
+    #dashboard { display: none; }
+
+    header {
+      background: white;
+      padding: 16px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    header .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    header .brand span { font-size: 26px; }
+
+    header h1 {
+      font-size: 18px;
+      font-weight: 800;
+      color: #8E44AD;
+    }
+
+    header .meta {
+      font-size: 12px;
+      color: #999;
+      text-align: right;
+    }
+
+    .refresh-btn {
+      background: #8E44AD;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      padding: 8px 16px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      margin-left: 12px;
+    }
+
+    .main {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 24px 16px;
+    }
+
+    /* ── Summary cards ── */
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 14px;
+      margin-bottom: 28px;
+    }
+
+    .summary-card {
+      background: white;
+      border-radius: 16px;
+      padding: 18px 16px;
+      text-align: center;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+      border-top: 4px solid #8E44AD;
+    }
+
+    .summary-card .icon { font-size: 28px; margin-bottom: 6px; }
+    .summary-card .num  { font-size: 28px; font-weight: 800; color: #8E44AD; }
+    .summary-card .lbl  { font-size: 12px; color: #888; margin-top: 2px; }
+
+    /* ── Charts grid ── */
+    .charts-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 20px;
+    }
+
+    .chart-card {
+      background: white;
+      border-radius: 16px;
+      padding: 20px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+    }
+
+    .chart-card h3 {
+      font-size: 14px;
+      font-weight: 700;
+      color: #444;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .chart-wrap {
+      position: relative;
+      height: 220px;
+    }
+
+    /* ── Loading ── */
+    .loading {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 60px 0;
+      gap: 16px;
+      color: #8E44AD;
+      font-weight: 600;
+    }
+
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 4px solid #e0d6f0;
+      border-top-color: #8E44AD;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Top list ── */
+    .top-list { list-style: none; }
+
+    .top-list li {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 0;
+      border-bottom: 1px solid #f0eaf8;
+      font-size: 13px;
+    }
+
+    .top-list li:last-child { border-bottom: none; }
+
+    .top-list .bar-wrap {
+      flex: 1;
+      height: 8px;
+      background: #f0eaf8;
+      border-radius: 4px;
+      margin: 0 10px;
+      overflow: hidden;
+    }
+
+    .top-list .bar {
+      height: 100%;
+      background: linear-gradient(90deg, #8E44AD, #c39bd3);
+      border-radius: 4px;
+      transition: width 0.8s ease;
+    }
+
+    .top-list .count {
+      font-weight: 700;
+      color: #8E44AD;
+      min-width: 40px;
+      text-align: right;
+    }
+
+    @media (max-width: 600px) {
+      .charts-grid { grid-template-columns: 1fr; }
+      header h1 { font-size: 15px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── LOGIN ── -->
+<div id="login-screen">
+  <div class="login-card">
+    <div class="logo">👩‍⚕️</div>
+    <h2>Smart Woman</h2>
+    <p>Admin Dashboard — Ingiza nywila yako</p>
+    <input type="text" id="supabase-url" placeholder="Supabase URL (https://xxx.supabase.co)" />
+    <input type="password" id="admin-secret" placeholder="Admin Secret" />
+    <button onclick="doLogin()">Ingia</button>
+    <p class="error-msg" id="err-msg">Nywila si sahihi. Jaribu tena.</p>
+  </div>
+</div>
+
+<!-- ── DASHBOARD ── -->
+<div id="dashboard">
+  <header>
+    <div class="brand">
+      <span>👩‍⚕️</span>
+      <div>
+        <h1>Smart Woman — Admin</h1>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px">
+      <div class="meta" id="last-updated">—</div>
+      <button class="refresh-btn" onclick="loadData()">🔄 Refresh</button>
+    </div>
+  </header>
+
+  <div class="main">
+    <div id="loading-area" class="loading">
+      <div class="spinner"></div>
+      <span>Inapakia takwimu za GA4...</span>
+    </div>
+
+    <div id="content-area" style="display:none">
+      <!-- Summary cards -->
+      <div class="summary-grid" id="summary-grid"></div>
+
+      <!-- Charts -->
+      <div class="charts-grid" id="charts-grid"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // ── Config ────────────────────────────────────────────────────────────
+  let SUPABASE_URL   = "";
+  let ADMIN_SECRET   = "";
+  const FUNCTION_NAME = "ga4-dashboard";
+
+  const COLORS = [
+    "#8E44AD","#A569BD","#C39BD3","#D7BDE2",
+    "#E8DAEF","#6c3483","#5b2c6f","#4a235a",
+  ];
+
+  // ── Login ─────────────────────────────────────────────────────────────
+  async function doLogin() {
+    SUPABASE_URL  = document.getElementById("supabase-url").value.trim().replace(/\/$/, "");
+    ADMIN_SECRET  = document.getElementById("admin-secret").value.trim();
+
+    if (!SUPABASE_URL || !ADMIN_SECRET) {
+      showErr("Jaza URL na nywila zote mbili.");
+      return;
+    }
+
+    // Test connection
+    try {
+      const res = await callFunction();
+      if (res.ok) {
+        document.getElementById("login-screen").style.display  = "none";
+        document.getElementById("dashboard").style.display     = "block";
+        renderDashboard(res);
+      } else {
+        showErr("Nywila si sahihi au URL si sahihi.");
+      }
+    } catch (e) {
+      showErr("Imeshindwa kuunganika: " + e.message);
+    }
+  }
+
+  function showErr(msg) {
+    const el = document.getElementById("err-msg");
+    el.textContent = msg;
+    el.style.display = "block";
+  }
+
+  // ── Fetch data ────────────────────────────────────────────────────────
+  async function callFunction() {
+    const url = `${SUPABASE_URL}/functions/v1/${FUNCTION_NAME}`;
+    const res = await fetch(url, {
+      method: "GET",
+      headers: {
+        "x-admin-secret": ADMIN_SECRET,
+        "Content-Type": "application/json",
+      },
+    });
+    return await res.json();
+  }
+
+  async function loadData() {
+    document.getElementById("loading-area").style.display  = "flex";
+    document.getElementById("content-area").style.display  = "none";
+
+    try {
+      const res = await callFunction();
+      if (res.ok) renderDashboard(res);
+    } catch (e) {
+      alert("Imeshindwa kupakia: " + e.message);
+    }
+  }
+
+  // ── Render ────────────────────────────────────────────────────────────
+  function renderDashboard(res) {
+    const d = res.data;
+
+    // Last updated
+    const dt = new Date(res.generatedAt);
+    document.getElementById("last-updated").textContent =
+      `Imesasishwa: ${dt.toLocaleDateString("sw")} ${dt.toLocaleTimeString("sw")}`;
+
+    // Summary cards
+    const totalPregnant   = d.pregnancy_month.reduce((s, r) => s + r.count, 0);
+    const totalPremium    = d.premium_status.find(r => r.label.toLowerCase().includes("premium"))?.count ?? 0;
+    const totalUsers      = d.user_mode.reduce((s, r) => s + r.count, 0);
+    const topRegion       = d.user_real_region?.[0]?.label ?? "—";
+
+    document.getElementById("summary-grid").innerHTML = `
+      <div class="summary-card">
+        <div class="icon">🤰</div>
+        <div class="num">${totalPregnant.toLocaleString()}</div>
+        <div class="lbl">Wana Ujauzito</div>
+      </div>
+      <div class="summary-card">
+        <div class="icon">⭐</div>
+        <div class="num">${totalPremium.toLocaleString()}</div>
+        <div class="lbl">Premium Users</div>
+      </div>
+      <div class="summary-card">
+        <div class="icon">👩</div>
+        <div class="num">${totalUsers.toLocaleString()}</div>
+        <div class="lbl">Watumiaji Wote</div>
+      </div>
+      <div class="summary-card">
+        <div class="icon">📍</div>
+        <div class="num" style="font-size:18px">${topRegion}</div>
+        <div class="lbl">Mkoa Mkubwa</div>
+      </div>
+    `;
+
+    // Charts
+    const grid = document.getElementById("charts-grid");
+    grid.innerHTML = "";
+
+    const charts = [
+      { key: "cellular_operator",        title: "📶 Mtandao wa Simu",         type: "doughnut" },
+      { key: "user_real_region",         title: "📍 Mkoa wa Mtumiaji",         type: "bar"      },
+      { key: "cycle_goal",               title: "🎯 Lengo la Mzunguko",        type: "doughnut" },
+      { key: "clinic_attendance_status", title: "🏥 Mahudhurio ya Clinic",      type: "bar"      },
+      { key: "pregnancy_month",          title: "🤰 Mwezi wa Ujauzito",        type: "bar"      },
+      { key: "user_mode",                title: "📱 Mode ya Mtumiaji",         type: "doughnut" },
+      { key: "premium_status",           title: "⭐ Hali ya Malipo",           type: "doughnut" },
+      { key: "app_language",             title: "🌍 Lugha ya App",             type: "doughnut" },
+      { key: "contraceptive_use",        title: "💊 Uzazi wa Mpango",          type: "bar"      },
+      { key: "hormone_condition",        title: "🔬 Hali ya Hormone",          type: "bar"      },
+    ];
+
+    charts.forEach(({ key, title, type }) => {
+      const rows = d[key] ?? [];
+      if (rows.length === 0) return;
+
+      const card = document.createElement("div");
+      card.className = "chart-card";
+
+      if (type === "bar" && rows.length > 5) {
+        // Top list with bars
+        const max = rows[0].count;
+        card.innerHTML = `
+          <h3>${title}</h3>
+          <ul class="top-list">
+            ${rows.slice(0, 8).map(r => `
+              <li>
+                <span style="min-width:90px;font-size:12px">${r.label}</span>
+                <div class="bar-wrap">
+                  <div class="bar" style="width:${Math.round((r.count/max)*100)}%"></div>
+                </div>
+                <span class="count">${r.count.toLocaleString()}</span>
+              </li>
+            `).join("")}
+          </ul>
+        `;
+      } else {
+        // Chart.js
+        const canvasId = `chart-${key}`;
+        card.innerHTML = `
+          <h3>${title}</h3>
+          <div class="chart-wrap">
+            <canvas id="${canvasId}"></canvas>
+          </div>
+        `;
+        grid.appendChild(card);
+
+        setTimeout(() => {
+          const ctx = document.getElementById(canvasId)?.getContext("2d");
+          if (!ctx) return;
+
+          new Chart(ctx, {
+            type: type,
+            data: {
+              labels: rows.map(r => r.label),
+              datasets: [{
+                data: rows.map(r => r.count),
+                backgroundColor: COLORS.slice(0, rows.length),
+                borderRadius: type === "bar" ? 6 : 0,
+                borderWidth: type === "doughnut" ? 2 : 0,
+                borderColor: "white",
+              }],
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: {
+                legend: {
+                  display: type === "doughnut",
+                  position: "bottom",
+                  labels: { font: { size: 11 }, padding: 10 },
+                },
+              },
+              scales: type === "bar" ? {
+                y: { beginAtZero: true, grid: { color: "#f0eaf8" } },
+                x: { grid: { display: false }, ticks: { font: { size: 11 } } },
+              } : {},
+            },
+          });
+        }, 50);
+        return;
+      }
+
+      grid.appendChild(card);
+    });
+
+    document.getElementById("loading-area").style.display = "none";
+    document.getElementById("content-area").style.display = "block";
+  }
+
+  // Enter key login
+  document.addEventListener("keydown", e => {
+    if (e.key === "Enter" && document.getElementById("login-screen").style.display !== "none") {
+      doLogin();
+    }
+  });
+</script>
+</body>
+</html>
