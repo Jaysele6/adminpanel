@@ -15,7 +15,6 @@
       min-height: 100vh;
     }
 
-    /* ── Login ── */
     #login-screen {
       display: flex;
       align-items: center;
@@ -34,23 +33,9 @@
       text-align: center;
     }
 
-    .login-card .logo {
-      font-size: 42px;
-      margin-bottom: 8px;
-    }
-
-    .login-card h2 {
-      font-size: 22px;
-      font-weight: 800;
-      color: #8E44AD;
-      margin-bottom: 4px;
-    }
-
-    .login-card p {
-      font-size: 13px;
-      color: #888;
-      margin-bottom: 28px;
-    }
+    .login-card .logo { font-size: 42px; margin-bottom: 8px; }
+    .login-card h2 { font-size: 22px; font-weight: 800; color: #8E44AD; margin-bottom: 4px; }
+    .login-card p { font-size: 13px; color: #888; margin-bottom: 28px; }
 
     .login-card input {
       width: 100%;
@@ -79,15 +64,8 @@
     }
 
     .login-card button:hover { background: #6c3483; }
+    .error-msg { color: #e74c3c; font-size: 13px; margin-top: 10px; display: none; }
 
-    .error-msg {
-      color: #e74c3c;
-      font-size: 13px;
-      margin-top: 10px;
-      display: none;
-    }
-
-    /* ── Dashboard ── */
     #dashboard { display: none; }
 
     header {
@@ -102,25 +80,10 @@
       z-index: 100;
     }
 
-    header .brand {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
+    header .brand { display: flex; align-items: center; gap: 10px; }
     header .brand span { font-size: 26px; }
-
-    header h1 {
-      font-size: 18px;
-      font-weight: 800;
-      color: #8E44AD;
-    }
-
-    header .meta {
-      font-size: 12px;
-      color: #999;
-      text-align: right;
-    }
+    header h1 { font-size: 18px; font-weight: 800; color: #8E44AD; }
+    header .meta { font-size: 12px; color: #999; text-align: right; }
 
     .refresh-btn {
       background: #8E44AD;
@@ -134,13 +97,8 @@
       margin-left: 12px;
     }
 
-    .main {
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 24px 16px;
-    }
+    .main { max-width: 1200px; margin: 0 auto; padding: 24px 16px; }
 
-    /* ── Summary cards ── */
     .summary-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
@@ -161,7 +119,6 @@
     .summary-card .num  { font-size: 28px; font-weight: 800; color: #8E44AD; }
     .summary-card .lbl  { font-size: 12px; color: #888; margin-top: 2px; }
 
-    /* ── Charts grid ── */
     .charts-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
@@ -185,12 +142,8 @@
       gap: 8px;
     }
 
-    .chart-wrap {
-      position: relative;
-      height: 220px;
-    }
+    .chart-wrap { position: relative; height: 220px; }
 
-    /* ── Loading ── */
     .loading {
       display: flex;
       flex-direction: column;
@@ -213,7 +166,6 @@
 
     @keyframes spin { to { transform: rotate(360deg); } }
 
-    /* ── Top list ── */
     .top-list { list-style: none; }
 
     .top-list li {
@@ -258,27 +210,25 @@
 </head>
 <body>
 
-<!-- ── LOGIN ── -->
+<!-- LOGIN -->
 <div id="login-screen">
   <div class="login-card">
     <div class="logo">👩‍⚕️</div>
     <h2>Smart Woman</h2>
-    <p>Admin Dashboard — Ingiza nywila yako</p>
+    <p>Admin Dashboard — Ingiza maelezo yako</p>
     <input type="text" id="supabase-url" placeholder="Supabase URL (https://xxx.supabase.co)" />
     <input type="password" id="admin-secret" placeholder="Admin Secret" />
     <button onclick="doLogin()">Ingia</button>
-    <p class="error-msg" id="err-msg">Nywila si sahihi. Jaribu tena.</p>
+    <p class="error-msg" id="err-msg">Imeshindwa kuunganika. Angalia URL na nywila.</p>
   </div>
 </div>
 
-<!-- ── DASHBOARD ── -->
+<!-- DASHBOARD -->
 <div id="dashboard">
   <header>
     <div class="brand">
       <span>👩‍⚕️</span>
-      <div>
-        <h1>Smart Woman — Admin</h1>
-      </div>
+      <div><h1>Smart Woman — Admin</h1></div>
     </div>
     <div style="display:flex;align-items:center;gap:8px">
       <div class="meta" id="last-updated">—</div>
@@ -291,47 +241,41 @@
       <div class="spinner"></div>
       <span>Inapakia takwimu za GA4...</span>
     </div>
-
     <div id="content-area" style="display:none">
-      <!-- Summary cards -->
       <div class="summary-grid" id="summary-grid"></div>
-
-      <!-- Charts -->
       <div class="charts-grid" id="charts-grid"></div>
     </div>
   </div>
 </div>
 
 <script>
-  // ── Config ────────────────────────────────────────────────────────────
-  let SUPABASE_URL   = "";
-  let ADMIN_SECRET   = "";
+  let SUPABASE_URL  = "";
+  let ADMIN_SECRET  = "";
   const FUNCTION_NAME = "ga4-dashboard";
 
   const COLORS = [
     "#8E44AD","#A569BD","#C39BD3","#D7BDE2",
-    "#E8DAEF","#6c3483","#5b2c6f","#4a235a",
+    "#6c3483","#5b2c6f","#4a235a","#E8DAEF",
   ];
 
   // ── Login ─────────────────────────────────────────────────────────────
   async function doLogin() {
-    SUPABASE_URL  = document.getElementById("supabase-url").value.trim().replace(/\/$/, "");
-    ADMIN_SECRET  = document.getElementById("admin-secret").value.trim();
+    SUPABASE_URL = document.getElementById("supabase-url").value.trim().replace(/\/$/, "");
+    ADMIN_SECRET = document.getElementById("admin-secret").value.trim();
 
     if (!SUPABASE_URL || !ADMIN_SECRET) {
       showErr("Jaza URL na nywila zote mbili.");
       return;
     }
 
-    // Test connection
     try {
       const res = await callFunction();
       if (res.ok) {
-        document.getElementById("login-screen").style.display  = "none";
-        document.getElementById("dashboard").style.display     = "block";
+        document.getElementById("login-screen").style.display = "none";
+        document.getElementById("dashboard").style.display    = "block";
         renderDashboard(res);
       } else {
-        showErr("Nywila si sahihi au URL si sahihi.");
+        showErr("Nywila si sahihi au URL si sahihi. (" + (res.action || res.error || "unknown") + ")");
       }
     } catch (e) {
       showErr("Imeshindwa kuunganika: " + e.message);
@@ -344,28 +288,43 @@
     el.style.display = "block";
   }
 
-  // ── Fetch data ────────────────────────────────────────────────────────
+  // ── Fetch ─────────────────────────────────────────────────────────────
   async function callFunction() {
     const url = `${SUPABASE_URL}/functions/v1/${FUNCTION_NAME}`;
     const res = await fetch(url, {
       method: "GET",
       headers: {
         "x-admin-secret": ADMIN_SECRET,
+        // ✅ Authorization header imeongezwa — Supabase inahitaji hii
+        "Authorization": "Bearer " + ADMIN_SECRET,
         "Content-Type": "application/json",
       },
     });
-    return await res.json();
+
+    // Handle non-JSON responses gracefully
+    const text = await res.text();
+    try {
+      return JSON.parse(text);
+    } catch {
+      return { ok: false, error: `HTTP ${res.status}: ${text.substring(0, 100)}` };
+    }
   }
 
   async function loadData() {
-    document.getElementById("loading-area").style.display  = "flex";
-    document.getElementById("content-area").style.display  = "none";
+    document.getElementById("loading-area").style.display = "flex";
+    document.getElementById("content-area").style.display = "none";
 
     try {
       const res = await callFunction();
-      if (res.ok) renderDashboard(res);
+      if (res.ok) {
+        renderDashboard(res);
+      } else {
+        alert("Imeshindwa kupakia: " + (res.error || res.action || "Jaribu tena"));
+        document.getElementById("loading-area").style.display = "none";
+      }
     } catch (e) {
       alert("Imeshindwa kupakia: " + e.message);
+      document.getElementById("loading-area").style.display = "none";
     }
   }
 
@@ -373,16 +332,14 @@
   function renderDashboard(res) {
     const d = res.data;
 
-    // Last updated
     const dt = new Date(res.generatedAt);
     document.getElementById("last-updated").textContent =
-      `Imesasishwa: ${dt.toLocaleDateString("sw")} ${dt.toLocaleTimeString("sw")}`;
+      `Imesasishwa: ${dt.toLocaleDateString()} ${dt.toLocaleTimeString()}`;
 
-    // Summary cards
-    const totalPregnant   = d.pregnancy_month.reduce((s, r) => s + r.count, 0);
-    const totalPremium    = d.premium_status.find(r => r.label.toLowerCase().includes("premium"))?.count ?? 0;
-    const totalUsers      = d.user_mode.reduce((s, r) => s + r.count, 0);
-    const topRegion       = d.user_real_region?.[0]?.label ?? "—";
+    const totalPregnant = d.pregnancy_month.reduce((s, r) => s + r.count, 0);
+    const totalPremium  = d.premium_status.find(r => r.label.toLowerCase().includes("premium"))?.count ?? 0;
+    const totalUsers    = d.user_mode.reduce((s, r) => s + r.count, 0);
+    const topRegion     = d.user_real_region?.[0]?.label ?? "—";
 
     document.getElementById("summary-grid").innerHTML = `
       <div class="summary-card">
@@ -407,21 +364,23 @@
       </div>
     `;
 
-    // Charts
+    // Destroy existing charts
+    Chart.helpers.each(Chart.instances, c => c.destroy());
+
     const grid = document.getElementById("charts-grid");
     grid.innerHTML = "";
 
     const charts = [
-      { key: "cellular_operator",        title: "📶 Mtandao wa Simu",         type: "doughnut" },
-      { key: "user_real_region",         title: "📍 Mkoa wa Mtumiaji",         type: "bar"      },
-      { key: "cycle_goal",               title: "🎯 Lengo la Mzunguko",        type: "doughnut" },
-      { key: "clinic_attendance_status", title: "🏥 Mahudhurio ya Clinic",      type: "bar"      },
-      { key: "pregnancy_month",          title: "🤰 Mwezi wa Ujauzito",        type: "bar"      },
-      { key: "user_mode",                title: "📱 Mode ya Mtumiaji",         type: "doughnut" },
-      { key: "premium_status",           title: "⭐ Hali ya Malipo",           type: "doughnut" },
-      { key: "app_language",             title: "🌍 Lugha ya App",             type: "doughnut" },
-      { key: "contraceptive_use",        title: "💊 Uzazi wa Mpango",          type: "bar"      },
-      { key: "hormone_condition",        title: "🔬 Hali ya Hormone",          type: "bar"      },
+      { key: "cellular_operator",        title: "📶 Mtandao wa Simu",       type: "doughnut" },
+      { key: "user_real_region",         title: "📍 Mkoa wa Mtumiaji",       type: "bar"      },
+      { key: "cycle_goal",               title: "🎯 Lengo la Mzunguko",      type: "doughnut" },
+      { key: "clinic_attendance_status", title: "🏥 Mahudhurio ya Clinic",    type: "bar"      },
+      { key: "pregnancy_month",          title: "🤰 Mwezi wa Ujauzito",      type: "bar"      },
+      { key: "user_mode",                title: "📱 Mode ya Mtumiaji",       type: "doughnut" },
+      { key: "premium_status",           title: "⭐ Hali ya Malipo",         type: "doughnut" },
+      { key: "app_language",             title: "🌍 Lugha ya App",           type: "doughnut" },
+      { key: "contraceptive_use",        title: "💊 Uzazi wa Mpango",        type: "bar"      },
+      { key: "hormone_condition",        title: "🔬 Hali ya Hormone",        type: "bar"      },
     ];
 
     charts.forEach(({ key, title, type }) => {
@@ -432,7 +391,6 @@
       card.className = "chart-card";
 
       if (type === "bar" && rows.length > 5) {
-        // Top list with bars
         const max = rows[0].count;
         card.innerHTML = `
           <h3>${title}</h3>
@@ -448,8 +406,8 @@
             `).join("")}
           </ul>
         `;
+        grid.appendChild(card);
       } else {
-        // Chart.js
         const canvasId = `chart-${key}`;
         card.innerHTML = `
           <h3>${title}</h3>
@@ -460,11 +418,12 @@
         grid.appendChild(card);
 
         setTimeout(() => {
-          const ctx = document.getElementById(canvasId)?.getContext("2d");
-          if (!ctx) return;
+          const canvas = document.getElementById(canvasId);
+          if (!canvas) return;
+          const ctx = canvas.getContext("2d");
 
           new Chart(ctx, {
-            type: type,
+            type,
             data: {
               labels: rows.map(r => r.label),
               datasets: [{
@@ -492,17 +451,13 @@
             },
           });
         }, 50);
-        return;
       }
-
-      grid.appendChild(card);
     });
 
     document.getElementById("loading-area").style.display = "none";
     document.getElementById("content-area").style.display = "block";
   }
 
-  // Enter key login
   document.addEventListener("keydown", e => {
     if (e.key === "Enter" && document.getElementById("login-screen").style.display !== "none") {
       doLogin();
